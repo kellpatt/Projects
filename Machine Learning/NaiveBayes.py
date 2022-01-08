@@ -161,8 +161,8 @@ class NaiveBayes:
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         current_dir = os.getcwd()
-        train_path = os.path.join(current_dir, "train")
-        test_path = os.path.join(current_dir, "test")
+        train_path = os.path.join(current_dir, "spam-ham/train")
+        test_path = os.path.join(current_dir, "spam-ham/test")
         model = NaiveBayes(train_path, test_path)
 
     elif len(sys.argv) == 3:
