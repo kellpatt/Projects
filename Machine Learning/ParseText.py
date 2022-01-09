@@ -2,6 +2,7 @@ import numpy as np
 from nltk.stem.snowball import SnowballStemmer  # http://www.nltk.org/howto/stem.html
 import codecs
 
+
 class ParseText:
     def __init__(self, filename, stop_words):
         self.stop_words = stop_words
@@ -90,4 +91,4 @@ class ParseText:
         return words
 
 if __name__ == "__main__":
-    training_data = ParseText('text.txt', stop_words=True)
+    training_data = ParseText('text.txt', stop_words=True)  # train/ham/0004.1999-12-14.farmer.ham.txt')

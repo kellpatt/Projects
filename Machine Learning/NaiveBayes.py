@@ -5,6 +5,7 @@ import numpy as np
 import os
 import sys
 
+
 class NaiveBayes:
     def __init__(self, train_path, test_path):
         self.training = []
