@@ -17,8 +17,8 @@ class NaiveBayes:
         print("Reading test data...")
         self.test = self.initialize(test_path)
 
-        self.prior = self.computePrior()
-        self.likelihood = self.computeLikelihood()
+        self.prior = self.compute_prior()
+        self.likelihood = self.compute_likelihood()
 
         prediction = []
         accuracy = 0
@@ -32,22 +32,23 @@ class NaiveBayes:
         accuracy /= num_examples
         print("Accuracy = ", accuracy)
 
-    def plotDict(self, dict):
+    @staticmethod
+    def plot_dict(dict):
         plt.plot(dict.keys(), dict.values())
         plt.show()
 
-    def list_nonhidden(self, dir):
+    @staticmethod
+    def list_nonhidden(directory):
         file_list = []
-        for file in os.listdir(dir):
+        for file in os.listdir(directory):
             if not file.startswith('.'):
                 file_list.append(file)
         return file_list
 
-    def initialize(self, dir):
+    def initialize(self, directory):
         examples = []
-        for folder in self.list_nonhidden(dir):
-            path = os.path.join(dir, folder)
-            text = []
+        for folder in self.list_nonhidden(directory):
+            path = os.path.join(directory, folder)
             for file in self.list_nonhidden(path):
                 filepath = os.path.join(path, file)
                 instance = ParseText(filepath, stop_words=False)
@@ -57,18 +58,19 @@ class NaiveBayes:
 
         return examples
 
-    def addToDict(self, dict, key, values_list, duplicates):
+    @staticmethod
+    def add_to_dict(dict, key, values_list, duplicates):
         if key not in dict:
             dict[key] = list()
 
-        if (duplicates == False):
+        if duplicates is False:
             # Add only unique values, which are not already in dict
             dict[key].extend(x for x in set(values_list) if x not in dict[key])
         else:
             dict[key].extend(values_list)
         return dict
 
-    def computeLikelihood(self):
+    def compute_likelihood(self):
         """
         Equations behind Likelihood:
            prob[class] = prob of a class occurring
@@ -81,15 +83,16 @@ class NaiveBayes:
         self.dict = {}  # store training instances by target
 
         for instance in self.training:  # populate each target dict w/ training instances
-            self.dict = self.addToDict(self.dict, instance.target, instance.text,
-                                       duplicates=False)
-            self.training_words = self.addToDict(self.training_words,
-                                       instance.target, instance.text,
-                                       duplicates=True)
+            self.dict = self.add_to_dict(self.dict, instance.target, instance.text,
+                                         duplicates=False)
+
+            self.training_words = self.add_to_dict(self.training_words,
+                                                   instance.target, instance.text,
+                                                   duplicates=True)
 
         self.frequency = {}
         probability = {}  # store dict of word frequencies
-                          # for each class (aka target)
+                            # for each class (aka target)
 
         # Initalize prob of all words to zero
         for target in self.dict.keys():
@@ -106,23 +109,24 @@ class NaiveBayes:
             # Laplace smoothing w/ k = 1
             k = 1
             laplace_denom = self.laplace_denom(k, len(self.training_words[target]), len(self.targets))
-            for word in self.training_words[target]: # list of all instances of training words
+            for word in self.training_words[target]:  # list of all instances of training words
                 self.frequency[target][word] += 1
 
-            for word in self.dict[target]: # list of unique training words
+            for word in self.dict[target]:  # list of unique training words
                 probability[target][word] = (float(self.frequency[target][word] + k) \
-                                                                          / laplace_denom)
+                                             / laplace_denom)
 
         return probability
 
-    def laplace_denom(self, k, total_words, cardinality):
+    @staticmethod
+    def laplace_denom(k, total_words, cardinality):
         return total_words + (k * cardinality)
 
     def predict(self, example):
         probability = {}
         for target in self.targets:
-            constant = 1E-80 # add small constant to prevent undefined, log(0) errors
-            probability[target] = np.log10(self.prior[target] + constant) # This was 0 before
+            constant = 1E-80  # add small constant to prevent undefined, log(0) errors
+            probability[target] = np.log10(self.prior[target] + constant)  # This was 0 before
             k = 1
             laplace = k / self.laplace_denom(k, len(self.dict[target]), len(self.targets))
 
@@ -133,14 +137,14 @@ class NaiveBayes:
 
         max_prob = float("-inf")
         predicted_class = None
-        for target in self.targets: # Find target w/ the highest probability
+        for target in self.targets:  # Find target w/ the highest probability
             if probability[target] > max_prob:
                 max_prob = probability[target]
                 predicted_class = target
 
         return predicted_class
 
-    def computePrior(self):
+    def compute_prior(self):
         # Compute prior, the probability of each target (class) occurring
         targets = []
         for instance in self.training:
@@ -159,17 +163,18 @@ class NaiveBayes:
             prior[target] = count / total
         return prior
 
+
 if __name__ == "__main__":
     if len(sys.argv) == 1:
         current_dir = os.getcwd()
-        train_path = os.path.join(current_dir, "spam-ham/train")
-        test_path = os.path.join(current_dir, "spam-ham/test")
-        model = NaiveBayes(train_path, test_path)
+        train_dir = os.path.join(current_dir, "spam-ham/train")
+        test_dir = os.path.join(current_dir, "spam-ham/test")
+        model = NaiveBayes(train_dir, test_dir)
 
     elif len(sys.argv) == 3:
-        train_path = sys.argv[1]
-        test_path = sys.argv[2]
-        model = NaiveBayes(train_path, test_path)
+        train_dir = sys.argv[1]
+        test_dir = sys.argv[2]
+        model = NaiveBayes(train_dir, test_dir)
 
     else:
         print("Error: Expected ./NaiveBayes.py  OR ./NaiveBayes.py <train_path> <test_path>\n")
